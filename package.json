@@ -1,7 +1,7 @@
 {
   "name": "apollo-selective-link",
   "version": "1.0.0",
-  "main": "selectiveLink.js",
+  "main": "_selectiveLink.js",
   "repository": "https://github.com/jackie217330/apollo-selective-link",
   "author": "jacky.lau <jacky.lau@augustsn.com>",
   "license": "MIT"

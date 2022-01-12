@@ -2,31 +2,32 @@ import { ApolloLink } from '@apollo/client';
 import { hasDirectives, Observable } from '@apollo/client/utilities';
 
 export default class SelectiveLink extends ApolloLink {
-  typeCache = new Map();
+  typeCache;
   uri;
   headers;
 
   constructor({ uri, headers = {} } = {}) {
     super();
+    this.typeCache = new Map();
     this.uri = uri;
     this.headers = headers;
   }
 
-  isSelectiveDirective = directive => {
+  isSelectiveDirective(directive) {
     if (!directive) return false;
     const { name } = directive;
     return (name || {}).value === 'selective';
   };
 
-  parseSelectiveDirective = directive => {
+  parseSelectiveDirective(directive){
     const args = (directive || {})['arguments'] || [];
     const type = ((args.find(arg => (arg.name || {}).value === 'type') || {}).value || {}).value;
     return { type };
   };
 
-  handleDirective = async (directive, selection, parent) => {
-    if (!this.isSelectiveDirective(directive)) return;
-    const { type } = this.parseSelectiveDirective(directive);
+  async handleDirective (directive, selection, parent) {
+    if (!this.isSelectiveDirective.bind(this)(directive)) return;
+    const { type } = this.parseSelectiveDirective.bind(this)(directive);
     selection.directives = [];
     if (!type) return;
 
@@ -57,19 +58,19 @@ export default class SelectiveLink extends ApolloLink {
     }
   };
 
-  handleDirectivesFromSelection = async (selection, parent) => {
+  async handleDirectivesFromSelection (selection, parent) {
     if (!selection) return;
     if (selection.directives && selection.directives.length > 0) {
-      await Promise.all(selection.directives.map(directive => this.handleDirective(directive, selection, parent)));
+      await Promise.all(selection.directives.map(directive => this.handleDirective.bind(this)(directive, selection, parent)));
     }
     if (selection.selectionSet && selection.selectionSet.selections) {
       await Promise.all(
-        selection.selectionSet.selections.map(_selection => this.handleDirectivesFromSelection(_selection, selection)),
+        selection.selectionSet.selections.map(_selection => this.handleDirectivesFromSelection.bind(this)(_selection, selection)),
       );
     }
   };
 
-  request = (operation, forward) => {
+  request (operation, forward)  {
     let query = operation.query;
     if (hasDirectives(['selective'], query)) {
       return new Observable(observer => {
@@ -77,7 +78,7 @@ export default class SelectiveLink extends ApolloLink {
         let closed = false;
         Promise.resolve(operation)
           .then(() => {
-            return Promise.all(query.definitions.map(this.handleDirectivesFromSelection));
+            return Promise.all(query.definitions.map(this.handleDirectivesFromSelection.bind(this)));
           })
           .then(() => {
             if (closed) return;
