@@ -1,10 +1,8 @@
 import React from 'react'
-
-import { ExampleComponent } from 'apollo-selective-link'
-import 'apollo-selective-link/dist/index.css'
+import selectiveLink from 'apollo-selective-link'
 
 const App = () => {
-  return <ExampleComponent text="Create React Library Example 😄" />
+  return null;
 }
 
 export default App
