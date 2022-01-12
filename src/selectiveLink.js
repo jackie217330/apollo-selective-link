@@ -30,7 +30,7 @@ export default class SelectiveLink extends ApolloLink {
     selection.directives = [];
     if (!type) return;
 
-    const fieldName = getFieldName(selection);
+    const fieldName = this.getFieldName(selection);
     const selections = ((parent || {}).selectionSet || {}).selections || [];
 
     let cached = this.typeCache.get(type);
@@ -48,14 +48,14 @@ export default class SelectiveLink extends ApolloLink {
       this.typeCache.set(type, cached);
     }
     if (!~cached.indexOf(fieldName)) {
-      const index = selections.findIndex(_selection => getFieldName(_selection) === fieldName);
+      const index = selections.findIndex(_selection => this.getFieldName(_selection) === fieldName);
       selections.splice(index, 1);
     }
-
-    function getFieldName(selection) {
-      return ((selection || {}).name || {}).value || '';
-    }
   };
+
+  getFieldName = selection => {
+    return ((selection || {}).name || {}).value || '';
+  }
 
   handleDirectivesFromSelection = async (selection, parent) => {
     if (!selection) return;
